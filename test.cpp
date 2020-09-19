@@ -4,7 +4,20 @@
 using namespace std;
 
 int main(){
-	string test = "       HeLlo";
-	test = lower(ltrim(&test[0], NULL));
-	println(1, &test[0]);
+	int edges[][2] = {
+		{1, 2},
+		{1, 3},
+		{2, 4},
+		{4, 7},
+		{4, 8},
+		{8, 11},
+		{3, 5},
+		{3, 6},
+		{6, 9},
+		{6, 10}
+	};
+	graph *G = createGraph(11, 10, edges, true);
+	dfs(G, 1, NULL, NULL, NULL);
+	printGraph(G);
+	free(G);
 }

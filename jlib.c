@@ -5,7 +5,9 @@
 AUTHOR: Jerry Li unless otherwise specified
 NOTES:
 - to use these functions on a std::string, pass the string using &str[0] so that you pass a char* instead of a const char* when using str.c_str()
-- queue is made up of elements called item
+- queue is made up of elements called item, uses a singly linked list
+- stack is made up of elements called item, uses a singly linked list
+- set union data structure is not general, made specially for kruskal algorithm
 - graphs use adjacent lists
 */
 #ifdef __cplusplus
@@ -18,6 +20,7 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 
 /*
 this is a general purpose print function that allows you to specify what
@@ -206,12 +209,131 @@ bool isEmpty(queue* Q){
 	return Q->size == 0;
 }
 
+void freeQueue(queue *Q){
+	while(Q->size > 0){
+		dequeue(Q);
+	}
+	free(Q);
+}
+/*
+
+
+
+STACK DATA STRUCTURE
+
+
+
+
+*/
+typedef struct stack{
+	int size;
+	item *first;
+}stack;
+
+stack *createStack(){
+	stack *S = (stack*)(calloc(1, sizeof(stack)));
+	S->size = 0;
+	S->first = NULL;
+	return S;
+}
+
+void pushStack(stack *s, int v){
+	item *temp = (item*)(calloc(1, sizeof(item)));
+	temp->i = v;
+	temp->next = s->first;
+	s->first = temp;
+	s->size++;
+}
+
+int popStack(stack *s){
+	if(s->size == 0){
+		return -1;
+	}
+	int output = s->first->i;
+	item *toFree = s->first;
+	s->first = s->first->next;
+	free(toFree);
+	s->size--;
+	return output;
+}
+
+void printStack(stack *s){
+	item *temp = s->first;
+	printf("\n");
+	while(s->first){
+		printf("%d ", s->first->i);
+		s->first = s->first->next;
+	}
+	printf("\n");
+	s->first = temp;
+}
+
+void freeStack(stack *s){
+	while(s->size > 0){
+		popStack(s);
+	}
+	free(s);
+}
+
+/*
+
+
+
+SET UNION DATA STRUCTURE
+
+
+
+*/
+typedef struct{
+	int *p;
+	int *size;
+	int n;
+}setUnion;
+
+void createSetUnion(setUnion *s, int size){
+	s = (setUnion *)(calloc(1, sizeof(setUnion)));
+	s->p = (int *)(calloc(size, sizeof(int)));
+	s->size = (int *)(calloc(size, sizeof(int)));
+
+	for(int i = 1; i <= size; ++i){
+		s->p[i] = i;
+		s->size[i] = 1;
+	}
+	s->n = size;
+}
+
+int find(setUnion *s, int x){
+	if(s->p[x] == x) return x;
+	else return (find(s, s->p[x]));
+}
+
+void unionSets(setUnion *s, int s1, int s2){
+	int r1, r2;
+	r1 = find(s, s1);
+	r2 = find(s, s2);
+	if(r1 == r2) return;
+	if(s->size[r1] >= s->size[r2]){
+		s->size[r1] = s->size[r1] + s->size[r2];
+		s->p[r2] = r1;
+	}else{
+		s->size[r2] = s->size[r1] + s->size[r2];
+		s->p[r1] = r2;
+	}
+}
+
+bool same_component(setUnion *s, int s1, int s2){
+	return (find(s, s1) == find(s, s2));
+}
+
 /*
 
 
 
 GRAPH DATA STRUCTURE
 
+MOST OF THESE METHODS ARE FROM THE BOOK:
+SKIENA THE ALGORITHM DESIGN MANUAL
+I MAKE NO CLAIM TO THESE ALGORITHMS
 
 
 */
@@ -237,10 +359,16 @@ typedef struct graph{
 	bool bfs;
 	bool dfs;
 	bool finished;
+
+	int *reachable_ancestor;
+	int *tree_out_degree;
+
+	queue *q;
+	stack *s;
 }graph;
 
 static int cmprow(const void *a, const void *b){
-    const int * const ia = a, * const ib = b;
+    const int * const ia = (const int*)a, * const ib = (const int*)b;
     return ia[0] < ib[0] ? -1 : ia[0] > ib[0];
 }
 
@@ -263,7 +391,7 @@ graph* createGraph(int numVertices, int numEdges, int sides[][2], bool directed)
 	if(numVertices == 0){
 		return NULL;
 	}
-	graph *G = calloc(1, sizeof(graph));
+	graph *G = (graph*)(calloc(1, sizeof(graph)));
 	G->degree = (int*)(calloc(numVertices + 1, sizeof(int)));
 	G->edges = (edgenode**)(calloc(numVertices + 1, sizeof(edgenode*)));
 	G->directed = directed;
@@ -319,7 +447,7 @@ graph* createWeightedGraph(int numVertices, int numEdges, int sides[][3], bool d
 	if(numVertices == 0){
 		return NULL;
 	}
-	graph *G = calloc(1, sizeof(graph));
+	graph *G = (graph*)(calloc(1, sizeof(graph)));
 	G->degree = (int*)(calloc(numVertices + 1, sizeof(int)));
 	G->edges = (edgenode**)(calloc(numVertices + 1, sizeof(edgenode*)));
 	G->directed = directed;
@@ -430,6 +558,7 @@ void pe(int v, int y, graph *g){return;}
 void pvl(int v, graph *g){return;}
 
 //search helper method
+enum EDGEedge_classIFICATION{TREE, BACK, FORWARD, CROSS};
 void dfsHelper(graph *g, int v, void(*process_vertex_early)(int, graph*), void(*process_edge)(int, int, graph*), void(*process_vertex_late)(int, graph*)){
 	edgenode *p;
 	int y;
@@ -463,6 +592,13 @@ void dfsHelper(graph *g, int v, void(*process_vertex_early)(int, graph*), void(*
 
 	g->processed[v] = true;
 }
+int edge_classification(int x, int y, graph *g){
+	if(g->parent[y] == x) return TREE;
+	if(g->discovered[y] && !g->processed[y]) return BACK;
+	if(g->processed[y] && (g->entry_time[y] > g->entry_time[x])) return FORWARD;
+	if(g->processed[y] && (g->entry_time[y] < g->entry_time[x])) return CROSS;
+	return -1;
+}
 
 //searches
 void bfs(graph *g, int start, void(*process_vertex_early)(int, graph*), void(*process_edge)(int, int, graph*), void(*process_vertex_late)(int, graph*)){
@@ -477,14 +613,14 @@ void bfs(graph *g, int start, void(*process_vertex_early)(int, graph*), void(*pr
 	if(process_vertex_late == NULL){
 		process_vertex_late = &pvl;
 	}
-	queue *q = createQueue();
+	g->q = createQueue();
 	int v, y;
 	edgenode *p;
 	init_search(g);
-	enqueue(q, start);
+	enqueue(g->q, start);
 	g->discovered[start] = true;
-	while(isEmpty(q) == false){
-		v = dequeue(q);
+	while(isEmpty(g->q) == false){
+		v = dequeue(g->q);
 		(*process_vertex_early)(v, g);
 		g->processed[v] = true;
 		p = g->edges[v];
@@ -494,7 +630,7 @@ void bfs(graph *g, int start, void(*process_vertex_early)(int, graph*), void(*pr
 				(*process_edge)(v, y, g);
 			}
 			if(g->discovered[y] == false){
-				enqueue(q, y);
+				enqueue(g->q, y);
 				g->discovered[y] = true;
 				g->parent[y] = v;
 			}
@@ -505,6 +641,7 @@ void bfs(graph *g, int start, void(*process_vertex_early)(int, graph*), void(*pr
 
 	free(g->discovered);
 	free(g->processed);
+	freeQueue(g->q);
 }
 void dfs(graph *g, int v, void(*process_vertex_early)(int, graph*), void(*process_edge)(int, int, graph*), void(*process_vertex_late)(int, graph*)){
 	g->dfs = true;
@@ -580,23 +717,84 @@ void process_edge_cycle(int v, int y, graph* g){
 void findCycle(graph*g, int start){
 	dfs(g, start, NULL, process_edge_cycle, NULL);
 }
+//find articulation points
+//
+//
+//
+void findAP_pve(int v, graph *g){
+	g->reachable_ancestor[v] = v;
+}
+void findAP_pe(int v, int y, graph *g){
+	int edge_class = edge_classification(v, y, g);
+	if(edge_class == TREE)
+		g->tree_out_degree[v] += 1;
+	if((edge_class == BACK) && (g->parent[v] != y)){
+		if(g->entry_time[y] < g->entry_time[g->reachable_ancestor[v]])
+			g->reachable_ancestor[v] = y;
+	}
+}
+void findAP_pvl(int v, graph *g){
+	bool root;
+	int time_v, time_parent;
+	if(g->parent[v] < 1){
+		if(g->tree_out_degree[v] > 1){ 
+			printf("root\n");
+			return;
+		}else{
+			return;
+		}
+	}
+	root = g->parent[g->parent[v]] < 1;
+	if((g->reachable_ancestor[v] == g->parent[v]) && (!root))
+		printf("parent articulation vertex at %d\n", g->parent[v]);
+	if(g->reachable_ancestor[v] == v){
+		printf("bridge articulation for parent %d\n", g->parent[v]);
+		if(g->tree_out_degree[v] > 0)
+			printf("bridge articulation for child %d\n", v);
+	}
+	time_v = g->entry_time[g->reachable_ancestor[v]];
+	time_parent = g->entry_time[g->reachable_ancestor[g->parent[v]]];
+	if(time_v < time_parent){
+		g->reachable_ancestor[g->parent[v]] = g->reachable_ancestor[v];
+	}
+}
+void findArtifulcationPoints(graph *g, int start){
+	g->reachable_ancestor = (int*)(calloc(g->nvertices + 1, sizeof(int)));
+	g->tree_out_degree = (int*)(calloc(g->nvertices + 1, sizeof(int)));
+	dfs(g, start, findAP_pve, findAP_pe, findAP_pvl);
+	free(g->reachable_ancestor);
+	free(g->tree_out_degree);
+}
+//topological sorting
+//
+//
+//
+void topsort_pvl(int v, graph *g){
+	pushStack(g->s, v);
+}
+void topsort_pe(int v, int y, graph *g){
+	int edge_class = edge_classification(v, y, g);
+	if(edge_class == BACK){
+		printf("Warning: directed cycle found, not a DAG\n");
+	}
+}
+void topsort(graph *g){
+	int i;
+	g->s = createStack();
+	init_search_dfs(g);
+	for(i = 1; i <= g->nvertices; ++i){
+		if(g->discovered[i] == false){
+			dfsHelper(g, i, pve, topsort_pe, topsort_pvl);
+		}
+	}
+	printStack(g->s);
+}
 
-
-
-int main(void){
-	int edges[][2] = {
-		{1, 2},
-		{2, 3},
-		{3, 1},
-		{3, 5},
-		{1, 4},
-		{4, 6}
-	};
-	graph *G = createGraph(3, 3, edges, true);
-	printf("numvert: %d\n", G->nvertices);
-	printf("numEdges: %d\n", G->nedges);
-	for(int i = 1; i <= G->nvertices; ++i){
-		edgenode *temp = G->edges[i];
+void printGraph(graph *g){
+	printf("numvert: %d\n", g->nvertices);
+	printf("numEdges: %d\n", g->nedges);
+	for(int i = 1; i <= g->nvertices; ++i){
+		edgenode *temp = g->edges[i];
 		printf("%d: ", i);
 		while(temp){
 			printf("%d(%d) ", temp->y, temp->weight);
@@ -604,7 +802,76 @@ int main(void){
 		}
 		printf("\n");
 	}
-	findCycle(G, 1);
+	for(int i = g->nvertices; i != 0; --i){
+		find_path(1, i, g->parent, g);
+	}
+	printf("\n");
+}
+/*
+
+
+WEIGHTED GRAPH ALG
+
+
+*/
+//create min spanning tree
+void prim(graph *g, int start){
+	g->bfs = true;
+	int i, v, w, weight, dist;
+	edgenode *p;
+	bool *intree = (bool*)(calloc(g->nvertices + 1, sizeof(bool)));
+	int *distance = (int *)(calloc(g->nvertices + 1, sizeof(int)));
+	for(i = 1; i <= g->nvertices; ++i){
+		distance[i] = INT_MAX;
+		g->parent[i] = -1;
+	}
+	distance[start] = 0;
+	v = start;
+	while(intree[v] == false){
+		intree[v] = true;
+		p = g->edges[v];
+		while(p != NULL){
+			w = p->y;
+			weight = p->weight;
+			if((distance[w] > weight) && (intree[w] == false)){
+				distance[w] = weight;
+				g->parent[w] = v;
+			}
+			p = p->next;
+		}
+		v = 1;
+		dist = INT_MAX;
+		for(i = 1; i <= g->nvertices; ++i){
+			if((intree[i] == false) && (dist > distance[i])){
+				dist = distance[i];
+				v = i;
+			}
+		}
+	}
+	free(intree);
+	free(distance);
+}
+void kruskal(graph *g){
+
+}
+
+int main(void){
+	int edges[][3] = {
+		{1, 2, 6},
+		{2, 3, 2},
+		{1, 3, 18},
+		{2, 4, 2},
+		{4, 7, 4},
+		{4, 8, 10},
+		{8, 11, 2},
+		{3, 5, 34},
+		{3, 6, 7},
+		{6, 9, 4},
+		{6, 10, 5}
+	};
+	graph *G = createWeightedGraph(11, 11, edges, false);
+	prim(G, 1);
+	printGraph(G);
 	free(G);
 }
 
