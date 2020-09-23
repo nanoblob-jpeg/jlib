@@ -82,14 +82,16 @@ Define the following things to include certain algs
 - void topsort(graph *g)
 - void printGraph(graph *g)
 - void prim(graph *g, int start)
-``` ```
+```
+```
 - void printPVE(int v, graph *g)
 - void printPE(int v, int y, graph *g)
 - void printPVL(int v, graph *g)
 - void pve(int v, graph *g)
 - void pe(int v, int y, graph *g)
 - void pvl(int v, graph *g)
-``` ```
+```
+```
 (following compare function for qsort provided by user unwind on stackoverflow: https://stackoverflow.com/users/28169/unwind)
 - static int cmprow(const void *a, const void *b)
 - void prependEdge(graph *G, int x, int y)
