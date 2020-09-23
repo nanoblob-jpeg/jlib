@@ -506,7 +506,7 @@ void pe(int v, int y, graph *g){return;}
 void pvl(int v, graph *g){return;}
 
 //search helper method
-enum EDGEedge_classIFICATION{TREE, BACK, FORWARD, CROSS};
+enum edge_class{TREE, BACK, FORWARD, CROSS};
 void dfsHelper(graph *g, int v, void(*process_vertex_early)(int, graph*), void(*process_edge)(int, int, graph*), void(*process_vertex_late)(int, graph*)){
 	edgenode *p;
 	int y;

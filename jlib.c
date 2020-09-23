@@ -22,6 +22,21 @@ extern "C" {
 #include <stdbool.h>
 #include <limits.h>
 
+//temp
+	//
+	//
+	//
+	//
+
+#define JLIB_GRAPH
+	//
+	//
+	//
+	//
+	//
+	
+
+#ifdef JLIB_PRINT
 /*
 this is a general purpose print function that allows you to specify what
 string separator and end character you want
@@ -50,7 +65,8 @@ void println(int num_args, ...){
 	printf("%c", '\n');
 	va_end(ap);
 }
-
+#endif
+#ifdef JLIB_TIMER
 clock_t fJdmiB6HJmrxl8Vb2ApzV1bRTTec;
 void timerStart(){
 	fJdmiB6HJmrxl8Vb2ApzV1bRTTec = clock();
@@ -64,7 +80,8 @@ void timerPrint(){
 	double time = ((double)fJdmiB6HJmrxl8Vb2ApzV1bRTTec)/CLOCKS_PER_SEC;
 	printf("took %f seconds\n", time);
 }
-
+#endif
+#ifdef JLIB_STRING
 char* lower(char *s){
 	int length = strlen(s);
 	for(int i = 0; i < length; ++i){
@@ -143,7 +160,14 @@ char *replace(char *str, char toReplace, char replacer){
 	}
 	return str;
 }
-
+#endif
+#if defined JLIB_GRAPH || defined JLIB_STACK || defined JLIB_QUEUE
+typedef struct item{
+	int i;
+	struct item *next;
+}item;
+#endif
+#if defined JLIB_GRAPH || defined JLIB_QUEUE
 /*
 
 
@@ -153,11 +177,6 @@ INT QUEUE DATA STRUCTURE
 
 
 */
-typedef struct item{
-	int i;
-	struct item *next;
-}item;
-
 typedef struct queue{
 	int size;
 	item *first;
@@ -215,6 +234,8 @@ void freeQueue(queue *Q){
 	}
 	free(Q);
 }
+#endif
+#if defined JLIB_STACK || defined JLIB_GRAPH
 /*
 
 
@@ -274,7 +295,8 @@ void freeStack(stack *s){
 	}
 	free(s);
 }
-
+#endif
+#if defined JLIB_GRAPH || defined JLIB_SETUNION
 /*
 
 
@@ -324,7 +346,8 @@ void unionSets(setUnion *s, int s1, int s2){
 bool same_component(setUnion *s, int s1, int s2){
 	return (find(s, s1) == find(s, s2));
 }
-
+#endif
+#ifdef JLIB_GRAPH
 /*
 
 
@@ -854,6 +877,7 @@ void prim(graph *g, int start){
 void kruskal(graph *g){
 
 }
+#endif
 
 int main(void){
 	int edges[][3] = {
