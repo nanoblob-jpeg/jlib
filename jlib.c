@@ -34,12 +34,13 @@ extern "C" {
 	//
 	//
 	//
-	
+
 
 #ifdef JLIB_PRINT
 /*
 this is a general purpose print function that allows you to specify what
 string separator and end character you want
+- you must pass in what you want to print as c style strings
 */
 void print(int num_args, char separator, char endline, ...){
 	va_list ap;
@@ -54,6 +55,7 @@ void print(int num_args, char separator, char endline, ...){
 }
 /*
 assumes that you are printing one line separated by spaces and ending with endline
+- you must pass in what you want to print as c style strings
 */
 void println(int num_args, ...){
 	va_list ap;
@@ -68,20 +70,30 @@ void println(int num_args, ...){
 #endif
 #ifdef JLIB_TIMER
 clock_t fJdmiB6HJmrxl8Vb2ApzV1bRTTec;
+/*
+starts the timer
+*/
 void timerStart(){
 	fJdmiB6HJmrxl8Vb2ApzV1bRTTec = clock();
 }
-
+/*
+stops the timer
+*/
 void timerEnd(){
 	fJdmiB6HJmrxl8Vb2ApzV1bRTTec = clock() - fJdmiB6HJmrxl8Vb2ApzV1bRTTec;
 }
-
+/*
+print the time elapsed from when you called timerStart() and timerEnd()
+*/
 void timerPrint(){
 	double time = ((double)fJdmiB6HJmrxl8Vb2ApzV1bRTTec)/CLOCKS_PER_SEC;
 	printf("took %f seconds\n", time);
 }
 #endif
 #ifdef JLIB_STRING
+/*
+turns all characters in a string to lowercase
+*/
 char* lower(char *s){
 	int length = strlen(s);
 	for(int i = 0; i < length; ++i){
@@ -91,7 +103,9 @@ char* lower(char *s){
 	}
 	return s;
 }
-
+/*
+turns all characters in a string to uppercase
+*/
 char* upper(char *s){
 	int length = strlen(s);
 	for(int i = 0; i < length; ++i){
@@ -112,7 +126,9 @@ char *trim(char *str, const char *seps)
 
 MINOR CHANGES DONE TO MAKE IT WORK WITH C++
 */
-
+/*
+removes seps chars from the left side of a string
+*/
 char *ltrim(char *str, const char *seps)
 {
     size_t totrim;
@@ -131,7 +147,9 @@ char *ltrim(char *str, const char *seps)
     }
     return str;
 }
-
+/*
+removes seps chars from the right side of a string
+*/
 char *rtrim(char *str, const char *seps)
 {
     int i;
@@ -145,12 +163,16 @@ char *rtrim(char *str, const char *seps)
     }
     return str;
 }
-
+/*
+removes seps chars from the left and right side of a string
+*/
 char *trim(char *str, const char *seps)
 {
     return ltrim(rtrim(str, seps), seps);
 }
-
+/*
+replaces all toReplace chars in a string with replacer
+*/
 char *replace(char *str, char toReplace, char replacer){
 	int length = strlen(str);
 	for(int i = 0; i < length; ++i){
@@ -162,6 +184,9 @@ char *replace(char *str, char toReplace, char replacer){
 }
 #endif
 #if defined JLIB_GRAPH || defined JLIB_STACK || defined JLIB_QUEUE
+/*
+int item used for the queues and stacks
+*/
 typedef struct item{
 	int i;
 	struct item *next;
@@ -181,14 +206,18 @@ typedef struct queue{
 	int size;
 	item *first;
 }queue;
-
+/*
+allocates data for a queue and sets values to 0/NULL
+*/
 queue* createQueue(){
 	queue *Q = (queue*)(calloc(1, sizeof(queue)));
 	Q->size = 0;
 	Q->first = NULL;
 	return Q;
 }
-
+/*
+adds an item to the queue
+*/
 void enqueue(queue* Q, int i){
 	item *add = (item*)(calloc(1, sizeof(item)));
 	add->i = i;
@@ -204,7 +233,9 @@ void enqueue(queue* Q, int i){
 	}
 	Q->size++;
 }
-
+/*
+returns and removes an item out of the queue
+*/
 int dequeue(queue* Q){
 	if(Q->size == 0){
 		return -1;
@@ -223,11 +254,15 @@ int dequeue(queue* Q){
 	Q->size--;
 	return output;
 }
-
+/*
+returns if the queue is empty
+*/
 bool isEmpty(queue* Q){
 	return Q->size == 0;
 }
-
+/*
+frees the queue
+*/
 void freeQueue(queue *Q){
 	while(Q->size > 0){
 		dequeue(Q);
@@ -240,7 +275,7 @@ void freeQueue(queue *Q){
 
 
 
-STACK DATA STRUCTURE
+INT STACK DATA STRUCTURE
 
 
 
@@ -250,14 +285,18 @@ typedef struct stack{
 	int size;
 	item *first;
 }stack;
-
+/*
+allocates memory for the stack
+*/
 stack *createStack(){
 	stack *S = (stack*)(calloc(1, sizeof(stack)));
 	S->size = 0;
 	S->first = NULL;
 	return S;
 }
-
+/*
+adds an item to the stack
+*/
 void pushStack(stack *s, int v){
 	item *temp = (item*)(calloc(1, sizeof(item)));
 	temp->i = v;
@@ -265,7 +304,9 @@ void pushStack(stack *s, int v){
 	s->first = temp;
 	s->size++;
 }
-
+/*
+removes and returns an item from the stack
+*/
 int popStack(stack *s){
 	if(s->size == 0){
 		return -1;
@@ -277,7 +318,9 @@ int popStack(stack *s){
 	s->size--;
 	return output;
 }
-
+/*
+prints the stack top to bottom
+*/
 void printStack(stack *s){
 	item *temp = s->first;
 	printf("\n");
@@ -288,7 +331,9 @@ void printStack(stack *s){
 	printf("\n");
 	s->first = temp;
 }
-
+/*
+frees the stack
+*/
 void freeStack(stack *s){
 	while(s->size > 0){
 		popStack(s);
@@ -301,7 +346,7 @@ void freeStack(stack *s){
 
 
 
-SET UNION DATA STRUCTURE
+INT SET UNION DATA STRUCTURE
 
 
 
@@ -311,7 +356,9 @@ typedef struct{
 	int *size;
 	int n;
 }setUnion;
-
+/*
+allocates memory for set union
+*/
 void createSetUnion(setUnion *s, int size){
 	s = (setUnion *)(calloc(1, sizeof(setUnion)));
 	s->p = (int *)(calloc(size, sizeof(int)));
@@ -323,12 +370,16 @@ void createSetUnion(setUnion *s, int size){
 	}
 	s->n = size;
 }
-
+/*
+find parent of the integer x
+*/
 int find(setUnion *s, int x){
 	if(s->p[x] == x) return x;
 	else return (find(s, s->p[x]));
 }
-
+/*
+combines two union sets
+*/
 void unionSets(setUnion *s, int s1, int s2){
 	int r1, r2;
 	r1 = find(s, s1);
@@ -342,7 +393,9 @@ void unionSets(setUnion *s, int s1, int s2){
 		s->p[r1] = r2;
 	}
 }
-
+/*
+returns whether two ints are part of the same tree
+*/
 bool same_component(setUnion *s, int s1, int s2){
 	return (find(s, s1) == find(s, s2));
 }
@@ -389,13 +442,18 @@ typedef struct graph{
 	queue *q;
 	stack *s;
 }graph;
-
+/*
+helper function for sorting the edges to make adding them easier
+*/
 static int cmprow(const void *a, const void *b){
     const int * const ia = (const int*)a, * const ib = (const int*)b;
     return ia[0] < ib[0] ? -1 : ia[0] > ib[0];
 }
 
 //graph creation
+/*
+adds an edge to a certain vertex in the adjacency list
+*/
 void prependEdge(graph *G, int x, int y){
 	edgenode *root = (edgenode*)(calloc(1, sizeof(edgenode)));
 	root->y = y;
@@ -403,6 +461,9 @@ void prependEdge(graph *G, int x, int y){
 	root->next = G->edges[x];
 	G->edges[x] = root;
 }
+/*
+adds a weighted edge to a certain vertex in the adjacency list
+*/
 void prependWeightedEdge(graph *G, int currentVertex, int y, int weight){
 	edgenode *root = (edgenode*)(calloc(1, sizeof(edgenode)));
 	root->y = y;
@@ -410,6 +471,9 @@ void prependWeightedEdge(graph *G, int currentVertex, int y, int weight){
 	root->next = G->edges[currentVertex];
 	G->edges[currentVertex] = root;
 }
+/*
+allocates memory and sets values for nonweighted graph
+*/
 graph* createGraph(int numVertices, int numEdges, int sides[][2], bool directed){
 	if(numVertices == 0){
 		return NULL;
@@ -466,6 +530,9 @@ graph* createGraph(int numVertices, int numEdges, int sides[][2], bool directed)
 	}
 	return G;
 }
+/*
+allocates memory and sets data for weighted graph
+*/
 graph* createWeightedGraph(int numVertices, int numEdges, int sides[][3], bool directed){
 	if(numVertices == 0){
 		return NULL;
@@ -524,12 +591,18 @@ graph* createWeightedGraph(int numVertices, int numEdges, int sides[][3], bool d
 }
 
 //deleting graph
+/*
+frees the memory allocated for an edge
+*/
 void freeEdge(edgenode *e){
 	if(e == NULL)
 		return;
 	freeEdge(e->next);
 	free(e);
 }
+/*
+frees a graph
+*/
 void freeGraph(graph *G){
 	for(int i = 0; i < G->nvertices + 1; ++i){
 		freeEdge(G->edges[i]);
@@ -549,6 +622,9 @@ void freeGraph(graph *G){
 }
 
 //initializing searches
+/*
+allocates memory and sets default values in preparation for searching
+*/
 void init_search(graph *g){
 	g->discovered = (bool*)(calloc(g->nvertices + 1, sizeof(bool)));
 	g->processed = (bool*)(calloc(g->nvertices + 1, sizeof(bool)));
@@ -556,6 +632,9 @@ void init_search(graph *g){
 		g->parent[i] = -1;
 	}
 }
+/*
+allocates memory and sets default values in preparation for searching by dfs
+*/
 void init_search_dfs(graph *g){
 	init_search(g);
 	g->entry_time = (int*)(calloc(g->nvertices + 1, sizeof(int)));
@@ -564,24 +643,45 @@ void init_search_dfs(graph *g){
 }
 
 //default methods during search
+/*
+debug print statement when used as the processing vertex early function
+*/
 void printPVE(int v, graph *g){
 	printf("processing vertex early: %d\n", v);
 	return;
 }
+/*
+debug print statement when used as the processing edge function
+*/
 void printPE(int v, int y, graph *g){
 	printf("processing edge: %d, %d\n", v, y);
 	return;
 }
+/*
+debug print statement when used as the processing vertex late function
+*/
 void printPVL(int v, graph *g){
 	printf("processing vertex late: %d\n", v);
 	return;
 }
+/*
+blank processing vertex early function
+*/
 void pve(int v, graph *g){return;}
+/*
+blank processing edge function
+*/
 void pe(int v, int y, graph *g){return;}
+/*
+blank processing vertex late function
+*/
 void pvl(int v, graph *g){return;}
 
 //search helper method
 enum EDGEedge_classIFICATION{TREE, BACK, FORWARD, CROSS};
+/*
+the recursive function for dfs
+*/
 void dfsHelper(graph *g, int v, void(*process_vertex_early)(int, graph*), void(*process_edge)(int, int, graph*), void(*process_vertex_late)(int, graph*)){
 	edgenode *p;
 	int y;
@@ -615,6 +715,9 @@ void dfsHelper(graph *g, int v, void(*process_vertex_early)(int, graph*), void(*
 
 	g->processed[v] = true;
 }
+/*
+classifying what kind of edge each edge is during a dfs traversal
+*/
 int edge_classification(int x, int y, graph *g){
 	if(g->parent[y] == x) return TREE;
 	if(g->discovered[y] && !g->processed[y]) return BACK;
@@ -624,6 +727,9 @@ int edge_classification(int x, int y, graph *g){
 }
 
 //searches
+/*
+does a bfs traversal and calls the 3 passed functions during the time where the names specify; if null, defaults to methods that don't do anything
+*/
 void bfs(graph *g, int start, void(*process_vertex_early)(int, graph*), void(*process_edge)(int, int, graph*), void(*process_vertex_late)(int, graph*)){
 	g->bfs = true;
 	g->dfs = false;
@@ -666,6 +772,9 @@ void bfs(graph *g, int start, void(*process_vertex_early)(int, graph*), void(*pr
 	free(g->processed);
 	freeQueue(g->q);
 }
+/*
+does a dfs traversal and calls the 3 passed functions during the time where the names specify; if null, defaults to methods that don't do anything
+*/
 void dfs(graph *g, int v, void(*process_vertex_early)(int, graph*), void(*process_edge)(int, int, graph*), void(*process_vertex_late)(int, graph*)){
 	g->dfs = true;
 	g->bfs = false;
