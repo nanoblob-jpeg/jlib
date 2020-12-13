@@ -63,11 +63,11 @@ Define the following things to include certain algs
 ```
 #define JLIB_GRAPH
 ```
-(this also defines JLIB_STACK, JLIB_QUEUE, and JLIB_SETUNION by itself as it needs all of these)
-(most of these are from The Algorithm Design Manual by Skiena with slight changes)
-(functions that should be called are listed first)
-(passabled processing functions are in the middle)
-(helper functions are listed at the bottom)
+* (this also defines JLIB_STACK, JLIB_QUEUE, and JLIB_SETUNION by itself as it needs all of these)
+* (most of these are from The Algorithm Design Manual by Skiena with slight changes)
+* (functions that should be called are listed first)
+* (disabled processing functions are in the middle)
+* (helper functions are listed at the bottom)
 - struct edgenode
 - struct graph
 - graph* createGraph(int numVertices, int numEdges, int sides[][2], bool directed)
