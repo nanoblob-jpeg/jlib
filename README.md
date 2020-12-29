@@ -1,6 +1,6 @@
 # jlib
 
-This is a library that contains algorithms written by me and algorithms I've compiled from other sources which are listed in the document and in this readme.
+This is a library that contains algorithms written by me and algorithms I've compiled from other sources which are listed in the document and in this readme.This is mainly just to supplement the C/C++ standard libraries with functions that I find myself needing from time to time.
 
 ## Prerequisites
 This library is just a c header file that you can #include in your c/c++ programs. To reduce the overhead to just want you need, the header is separated by preprocessor #ifdef and #endif. More detailed descriptions of functions are in the .c file so I'm just going to put function prototype here.
